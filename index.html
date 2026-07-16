@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0f1e">
+    
+    <!-- App Icons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        %22name%22: %22Devon Deonarine - Tech Dynamics%22,
+        %22short_name%22: %22Tech Dynamics%22,
+        %22start_url%22: %22./%22,
+        %22display%22: %22standalone%22,
+        %22theme_color%22: %22%230a0f1e%22,
+        %22background_color%22: %22%230a0f1e%22,
+        %22icons%22: [
+            {
+                %22src%22: %22icon.png%22,
+                %22sizes%22: %22192x192%22,
+                %22type%22: %22image/png%22,
+                %22purpose%22: %22any maskable%22
+            },
+            {
+                %22src%22: %22icon.png%22,
+                %22sizes%22: %22512x512%22,
+                %22type%22: %22image/png%22,
+                %22purpose%22: %22any maskable%22
+            }
+        ]
+    }">
+    
+    <title>Devon Deonarine | Tech Dynamics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0f1e 0%, #0d1425 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card-container {
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .business-card {
+            background: #0f172a;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .card-image-container {
+            background: #0f172a;
+            padding: 0;
+            position: relative;
+            perspective: 1600px;
+            cursor: pointer;
+        }
+
+        .card-flip-inner {
+            position: relative;
+            width: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-flip-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-image {
+            width: 100%;
+            display: block;
+        }
+
+        .card-face {
+            width: 100%;
+            display: block;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-face-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotateY(180deg);
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 14px;
+            background: rgba(0,0,0,0.55);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .contact-links {
+            background: #0f172a;
+            padding: 20px;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-row:last-child {
+            border-bottom: none;
+        }
+
+        .contact-icon {
+            width: 44px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-label {
+            font-size: 11px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .contact-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #f1f5f9;
+        }
+
+        .contact-value a {
+            color: #f1f5f9;
+            text-decoration: none;
+        }
+
+        .contact-value a:active {
+            opacity: 0.7;
+            color: #00d4ff;
+        }
+
+        .services {
+            background: #1e293b;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .services h4 {
+            font-size: 13px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+        }
+
+        .services ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .services li {
+            font-size: 13px;
+            color: #cbd5e1;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .services li:before {
+            content: "▹";
+            color: #00d4ff;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .tagline {
+            background: #0f172a;
+            color: #00d4ff;
+            text-align: center;
+            padding: 14px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #0a0f1e;
+            box-shadow: 0 4px 12px rgba(0,212,255,0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .share-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .share-btn {
+            flex: 1;
+            min-width: 80px;
+            background: #2d3748;
+            color: white;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .share-btn:active {
+            transform: scale(0.95);
+        }
+
+        .share-btn.whatsapp { background: #25D366; }
+        .share-btn.sms { background: #34B7F1; }
+        .share-btn.bluetooth { background: #1E88E5; }
+        .share-btn.copy { background: #6B7280; }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #718096;
+        }
+
+        .app-footer {
+            margin-top: 30px;
+            text-align: center;
+            padding: 16px 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 60px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .powered-by {
+            font-size: 10px;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+        }
+
+        .powered-by strong {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .offline-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="business-card">
+            <div class="card-image-container" id="cardFlipContainer">
+                <div class="card-flip-inner" id="cardFlipInner">
+                    <img class="card-image card-face card-face-front" id="cardFrontImage" alt="Devon Deonarine - Tech Dynamics Business Card (Front)">
+                    <img class="card-image card-face card-face-back" id="cardBackImage" alt="Devon Deonarine - Tech Dynamics Business Card (Back)">
+                </div>
+                <div class="flip-hint" id="flipHint">↻ Tap to flip</div>
+            </div>
+            
+            <div class="contact-links">
+                <div class="contact-row">
+                    <div class="contact-icon">📱</div>
+                    <div class="contact-info">
+                        <div class="contact-label">PHONE</div>
+                        <div class="contact-value"><a href="tel:+18683580435">+1 (868) 358-0435</a></div>
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="contact-icon">📧</div>
+                    <div class="contact-info">
+                        <div class="contact-label">EMAIL</div>
+                        <div class="contact-value"><a href="mailto:D-TechDynamics@proton.me">D-TechDynamics@proton.me</a></div>
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="contact-icon">💼</div>
+                    <div class="contact-info">
+                        <div class="contact-label">LINKEDIN</div>
+                        <div class="contact-value"><a href="https://www.linkedin.com/in/devon-deonarine-a1b2b0398" target="_blank" rel="noopener">devon-deonarine-a1b2b0398</a></div>
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="contact-icon">🐙</div>
+                    <div class="contact-info">
+                        <div class="contact-label">GITHUB</div>
+                        <div class="contact-value"><a href="https://github.com/DevonDeonarine" target="_blank" rel="noopener">DevonDeonarine</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="services">
+                <h4>SERVICES</h4>
+                <ul>
+                    <li>Custom Websites & Web Applications</li>
+                    <li>Full-Stack Development (Front & Back-End)</li>
+                    <li>Business Dashboards & Admin Systems</li>
+                    <li>Multi-Language & Mobile-Responsive Design</li>
+                    <li>Automation & Smart Features</li>
+                    <li>App & Software Development</li>
+                </ul>
+            </div>
+
+            <div class="tagline">
+                BUILT TO SCALE. DESIGNED TO PERFORM.
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="saveContactBtn">
+            📇 Save to Contacts (vCard)
+        </button>
+
+        <div class="share-grid">
+            <button class="share-btn whatsapp" id="shareWhatsApp">💬 WhatsApp</button>
+            <button class="share-btn sms" id="shareSMS">📱 SMS</button>
+            <button class="share-btn bluetooth" id="shareBluetooth">📡 Bluetooth</button>
+            <button class="share-btn copy" id="shareCopy">🔗 Copy Link</button>
+        </div>
+
+        <div class="footer-note" id="footerNote">
+            Tap any button to share your vCard or this card link
+        </div>
+
+        <!-- Footer with Powered By: D-Tech Dynamics -->
+        <div class="app-footer">
+            <div class="powered-by">
+                Powered By: <strong>D-Tech Dynamics</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="offline-badge" id="offlineBadge" style="display: none;">📡 Offline Mode</div>
+
+    <script>
+        const cardImage = document.getElementById('cardFrontImage');
+        const cardBackImage = document.getElementById('cardBackImage');
+        cardImage.src = 'front.png';
+        cardBackImage.src = 'back.png';
+
+        function handleImageError(imgEl, filename) {
+            imgEl.style.display = 'none';
+            const errorDiv = document.createElement('div');
+            errorDiv.style.padding = '60px 20px';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.style.backgroundColor = '#1e293b';
+            errorDiv.innerHTML = '<span style="font-size: 40px;">🖼️</span><p style="color: #94a3b8; margin-top: 10px;">' + filename + ' not found</p>';
+            imgEl.parentElement.insertBefore(errorDiv, imgEl);
+        }
+
+        cardImage.onerror = function() { handleImageError(this, 'front.png'); };
+        cardBackImage.onerror = function() { handleImageError(this, 'back.png'); };
+
+        const cardFlipContainer = document.getElementById('cardFlipContainer');
+        const cardFlipInner = document.getElementById('cardFlipInner');
+        const flipHint = document.getElementById('flipHint');
+
+        cardFlipContainer.addEventListener('click', function() {
+            const isFlipped = cardFlipInner.classList.toggle('flipped');
+            flipHint.textContent = isFlipped ? '↻ Tap to flip back' : '↻ Tap to flip';
+        });
+
+        // Detect whether this card is actually being served from a real URL
+        // (hosted online) versus opened directly as a local file / raw HTML.
+        // This determines whether link-based sharing (WhatsApp/SMS/Copy Link)
+        // makes sense, since a file:// path is meaningless to a recipient.
+        const isHostedOnline = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+
+        const footerNote = document.getElementById('footerNote');
+        footerNote.textContent = isHostedOnline
+            ? 'Tap any button to share your vCard or this card link'
+            : 'Running offline - buttons will share your vCard file directly';
+
+        function getVCardData() {
+            return [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                "N:Deonarine;Devon;;;",
+                "FN:Devon Deonarine",
+                "ORG:Tech Dynamics",
+                "TITLE:CEO & Owner, Full-Stack Developer & Software Architect",
+                "TEL;TYPE=CELL,VOICE,PREF:+18683580435",
+                "EMAIL;TYPE=WORK,INTERNET:D-TechDynamics@proton.me",
+                "URL;TYPE=LinkedIn:https://www.linkedin.com/in/devon-deonarine-a1b2b0398",
+                "URL;TYPE=GitHub:https://github.com/DevonDeonarine",
+                "NOTE:Custom Websites & Web Applications | Full-Stack Development | Business Dashboards & Admin Systems | Multi-Language & Mobile-Responsive Design | Automation & Smart Features | App & Software Development",
+                "URL;TYPE=Website:" + window.location.href,
+                "END:VCARD"
+            ].join("\n");
+        }
+
+        function getVCardBlob() {
+            return new Blob([getVCardData()], { type: 'text/vcard' });
+        }
+
+        // Shared download routine - pure client-side, works with zero
+        // internet connection and zero hosting, on any protocol.
+        function downloadVCard() {
+            const blob = getVCardBlob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'devon_deonarine.vcf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('saveContactBtn').addEventListener('click', downloadVCard);
+
+        async function shareVCardViaAPI() {
+            const blob = getVCardBlob();
+            const file = new File([blob], 'devon_deonarine.vcf', { type: 'text/vcard' });
+            
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'Devon Deonarine - Tech Dynamics',
+                        text: 'Here is my vCard - save me to your contacts!',
+                        files: [file]
+                    });
+                    return true;
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        console.log('Share failed:', err);
+                    }
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        document.getElementById('shareWhatsApp').addEventListener('click', async function() {
+            if (isHostedOnline) {
+                const url = window.location.href;
+                const text = `Hi! Here's my digital business card from D-Tech Dynamics: ${url}`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                window.open(whatsappUrl, '_blank');
+                return;
+            }
+            // No real URL to link to (running from a local file) - send the
+            // actual vCard file through the OS share sheet instead, which lets
+            // the person pick WhatsApp directly.
+            const shared = await shareVCardViaAPI();
+            if (!shared) {
+                downloadVCard();
+                alert('Your contact card was saved as devon_deonarine.vcf. Open WhatsApp and attach that file to send it.');
+            }
+        });
+
+        document.getElementById('shareSMS').addEventListener('click', async function() {
+            if (isHostedOnline) {
+                const url = window.location.href;
+                const text = `Hi! Here's my digital business card from D-Tech Dynamics: ${url}`;
+                const smsUrl = `sms:?body=${encodeURIComponent(text)}`;
+                window.location.href = smsUrl;
+                return;
+            }
+            // A local file:// path is meaningless in a text message - share
+            // the real vCard file via the OS share sheet instead.
+            const shared = await shareVCardViaAPI();
+            if (!shared) {
+                downloadVCard();
+                alert('Your contact card was saved as devon_deonarine.vcf. Attach that file to a text message to send it.');
+            }
+        });
+
+        // Fallback copy method for contexts where the Clipboard API is unavailable
+        // (e.g. the card opened as a local file, or any non-HTTPS context)
+        function copyTextFallback(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            let ok = false;
+            try {
+                ok = document.execCommand('copy');
+            } catch (err) {
+                ok = false;
+            }
+            document.body.removeChild(textarea);
+            return ok;
+        }
+
+        async function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch (err) {
+                    // fall through to legacy fallback below
+                }
+            }
+            return copyTextFallback(text);
+        }
+
+        document.getElementById('shareBluetooth').addEventListener('click', async function() {
+            const shared = await shareVCardViaAPI();
+            
+            if (!shared) {
+                if (isHostedOnline) {
+                    const url = window.location.href;
+                    const copied = await copyToClipboard(url);
+                    alert((copied ? 'Link copied! ' : '') + 'You can now:\n\n1. Open your Bluetooth settings\n2. Pair with another device\n3. Share this link via Bluetooth\n\nLink: ' + url);
+                } else {
+                    // Running as a local file with no share-sheet support in this
+                    // browser: fall back to a plain download the person can send
+                    // manually via their phone's Bluetooth/file-share option.
+                    downloadVCard();
+                    alert('Your contact card was saved as devon_deonarine.vcf.\n\nOpen your Downloads/Files app, select it, and choose Bluetooth to send it to another device.');
+                }
+            }
+        });
+
+        document.getElementById('shareCopy').addEventListener('click', async function() {
+            if (!isHostedOnline) {
+                // There's no real link to copy when running from a local file -
+                // save the vCard instead, which is the useful offline equivalent.
+                downloadVCard();
+                const originalText = this.innerHTML;
+                this.innerHTML = '📇 Saved instead!';
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                }, 2000);
+                return;
+            }
+            const url = window.location.href;
+            const copied = await copyToClipboard(url);
+            const originalText = this.innerHTML;
+            this.innerHTML = copied ? '✅ Copied!' : '⚠️ Copy failed';
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 2000);
+        });
+
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+                
+                function updateOfflineStatus() {
+                    const badge = document.getElementById('offlineBadge');
+                    if (!navigator.onLine) {
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                
+                window.addEventListener('online', updateOfflineStatus);
+                window.addEventListener('offline', updateOfflineStatus);
+                updateOfflineStatus();
+            });
+        }
+    </script>
+</body>
+</html>
