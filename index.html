@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0f1e">
+    
+    <!-- App Icons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        %22name%22: %22Devon Deonarine - Tech Dynamics%22,
+        %22short_name%22: %22Tech Dynamics%22,
+        %22start_url%22: %22./%22,
+        %22display%22: %22standalone%22,
+        %22orientation%22: %22landscape%22,
+        %22theme_color%22: %22%230a0f1e%22,
+        %22background_color%22: %22%230a0f1e%22,
+        %22icons%22: [
+            {
+                %22src%22: %22icon.png%22,
+                %22sizes%22: %22192x192%22,
+                %22type%22: %22image/png%22,
+                %22purpose%22: %22any maskable%22
+            },
+            {
+                %22src%22: %22icon.png%22,
+                %22sizes%22: %22512x512%22,
+                %22type%22: %22image/png%22,
+                %22purpose%22: %22any maskable%22
+            }
+        ]
+    }">
+    
+    <title>Devon Deonarine | Tech Dynamics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0f1e 0%, #0d1425 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        .card-container {
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Card art is landscape-shaped. On a phone held upright (portrait),
+           rotate the whole page 90deg so the card displays sideways and
+           fills the screen properly, instead of sitting as a small strip
+           in the middle of a tall viewport. If the phone is actually turned
+           to landscape, this rule doesn't match and nothing is rotated. */
+        @media screen and (orientation: portrait) {
+            html {
+                width: 100vh;
+                height: 100vw;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                transform-origin: left top;
+                transform: rotate(-90deg);
+                overflow-x: hidden;
+            }
+            body {
+                width: 100vh;
+                height: 100vw;
+                min-height: 0;
+            }
+            /* The card keeps its own artwork's exact aspect ratio (1659:948)
+               so nothing is ever cropped - it's scaled down to fit within
+               85% of the rotated frame instead, whichever dimension (height
+               or width) is the tighter constraint, and centered by the
+               body's flex rules. */
+            .card-container {
+                max-width: none;
+                aspect-ratio: 1659 / 948;
+                width: min(85vh, 85vw * (1659 / 948));
+            }
+        }
+
+        @media screen and (orientation: landscape) {
+            .card-container {
+                max-width: none;
+                aspect-ratio: 1659 / 948;
+                width: min(85vw, 85vh * (1659 / 948));
+            }
+        }
+
+        .business-card {
+            background: #0f172a;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-image-container {
+            background: #0f172a;
+            padding: 0;
+            position: relative;
+            perspective: 1600px;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-flip-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: fill;
+        }
+
+        .card-face {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-face-back {
+            transform: rotateY(180deg);
+        }
+
+        .tap-zone {
+            position: absolute;
+            left: 8%;
+            width: 88%;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            border-radius: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tap-zone:active {
+            background: rgba(0, 212, 255, 0.15);
+        }
+
+        .tap-zone-phone {
+            top: 44%;
+            height: 11%;
+        }
+
+        .tap-zone-email {
+            top: 55%;
+            height: 13%;
+        }
+
+        .tap-zone-linkedin {
+            top: 68%;
+            height: 11%;
+        }
+
+        .tap-zone-github {
+            top: 79%;
+            height: 12%;
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 14px;
+            background: rgba(0,0,0,0.55);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .info-btn {
+            position: absolute;
+            bottom: 10px;
+            left: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            font-size: 16px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .info-btn.visible {
+            display: flex;
+        }
+
+        .info-btn:active {
+            transform: scale(0.92);
+        }
+
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .panel-overlay.open {
+            display: flex;
+        }
+
+        .info-panel {
+            background: #0f172a;
+            width: 100%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 24px 24px 0 0;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-bottom: none;
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .panel-overlay.open .info-panel {
+            transform: translateY(0);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .panel-header h3 {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .panel-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .quick-actions.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+            margin-bottom: 0;
+        }
+
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 4px;
+            background: #1e293b;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #f1f5f9;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .quick-action:active {
+            opacity: 0.7;
+        }
+
+        .quick-action .qa-icon {
+            font-size: 20px;
+        }
+
+        .panel-services {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .panel-services h4 {
+            font-size: 12px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .panel-services ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .panel-services li {
+            font-size: 13px;
+            color: #cbd5e1;
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .panel-services li:before {
+            content: "▹";
+            color: #00d4ff;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #0a0f1e;
+            box-shadow: 0 4px 12px rgba(0,212,255,0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .contact-icon-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px 8px;
+            margin-bottom: 14px;
+        }
+
+        .contact-icon-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 4px 0;
+        }
+
+        .contact-icon-btn:active .ci-ring {
+            transform: scale(0.92);
+        }
+
+        .ci-ring {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 40%, #1a2436 0%, #0b1220 100%);
+            border: 2px solid var(--ci-color);
+            box-shadow: 0 0 10px var(--ci-color), inset 0 0 8px rgba(0,0,0,0.6);
+            transition: transform 0.15s ease;
+            color: var(--ci-color);
+        }
+
+        .ci-ring svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .ci-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .ci-red { --ci-color: #ff3b4e; }
+        .ci-blue { --ci-color: #2f8fff; }
+        .ci-green { --ci-color: #34d058; }
+        .ci-purple { --ci-color: #a855f7; }
+        .ci-teal { --ci-color: #16d0b3; }
+        .ci-orange { --ci-color: #ff9f1c; }
+
+        .offline-share-note {
+            font-size: 11px;
+            color: #718096;
+            text-align: center;
+            line-height: 1.4;
+            padding: 0 4px;
+        }
+
+        .offline-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="business-card">
+            <div class="card-image-container" id="cardFlipContainer">
+                <div class="card-flip-inner" id="cardFlipInner">
+                    <img class="card-image card-face card-face-front" id="cardFrontImage" alt="Devon Deonarine - Tech Dynamics Business Card (Front)">
+                    <div class="card-face card-face-back">
+                        <img class="card-image" id="cardBackImage" alt="Devon Deonarine - Tech Dynamics Business Card (Back)">
+                        <button class="tap-zone tap-zone-phone" id="tapPhone" aria-label="Phone contact options"></button>
+                        <button class="tap-zone tap-zone-email" id="tapEmail" aria-label="Send email"></button>
+                        <button class="tap-zone tap-zone-linkedin" id="tapLinkedIn" aria-label="Open LinkedIn"></button>
+                        <button class="tap-zone tap-zone-github" id="tapGitHub" aria-label="Open GitHub"></button>
+                    </div>
+                </div>
+                <div class="flip-hint" id="flipHint">↻ Tap to flip</div>
+                <button class="info-btn" id="infoBtn" aria-label="Services">ℹ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="panelOverlay">
+        <div class="info-panel">
+            <div class="panel-header">
+                <h3>Services</h3>
+                <button class="panel-close" id="panelClose" aria-label="Close">✕</button>
+            </div>
+
+            <div class="panel-services">
+                <ul>
+                    <li>Custom Websites & Web Applications</li>
+                    <li>Full-Stack Development (Front & Back-End)</li>
+                    <li>Business Dashboards & Admin Systems</li>
+                    <li>Multi-Language & Mobile-Responsive Design</li>
+                    <li>Automation & Smart Features</li>
+                    <li>App & Software Development</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-primary" id="saveContactBtn">
+                📇 Save to Contacts (vCard)
+            </button>
+
+            <div class="contact-icon-grid">
+                <button class="contact-icon-btn ci-red" id="ciPhone" aria-label="Phone call">
+                    <span class="ci-ring">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </span>
+                    <span class="ci-label">Phone Call</span>
+                </button>
+                <button class="contact-icon-btn ci-blue" id="ciSms" aria-label="Send SMS">
+                    <span class="ci-ring">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+                    </span>
+                    <span class="ci-label">SMS</span>
+                </button>
+                <button class="contact-icon-btn ci-green" id="ciEmail" aria-label="Send email">
+                    <span class="ci-ring">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+                    </span>
+                    <span class="ci-label">Email</span>
+                </button>
+                <button class="contact-icon-btn ci-purple" id="ciBluetooth" aria-label="Share via Bluetooth">
+                    <span class="ci-ring">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11L12 23V1l5.5 5.5-11 11"/></svg>
+                    </span>
+                    <span class="ci-label">Bluetooth</span>
+                </button>
+                <button class="contact-icon-btn ci-teal" id="ciWhatsApp" aria-label="Message on WhatsApp">
+                    <span class="ci-ring">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                    </span>
+                    <span class="ci-label">WhatsApp</span>
+                </button>
+                <button class="contact-icon-btn ci-orange" id="ciNearby" aria-label="Share nearby">
+                    <span class="ci-ring">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="17" r="1.6" fill="currentColor" stroke="none"/><path d="M6.2 8.2C9 11.5 13 8 16.5 11c1 .9 1.7 1.9 2.3 2.8"/></svg>
+                    </span>
+                    <span class="ci-label">Share Nearby</span>
+                </button>
+            </div>
+            <div class="offline-share-note">
+                Phone/SMS/Email open your phone's own apps directly. Bluetooth and Share Nearby open your phone's share menu with the contact card attached - pick Bluetooth or Nearby Share/AirDrop from the list, no internet needed.
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="phoneSheetOverlay">
+        <div class="info-panel">
+            <div class="panel-header">
+                <h3>Contact by Phone</h3>
+                <button class="panel-close" id="phoneSheetClose" aria-label="Close">✕</button>
+            </div>
+
+            <div class="quick-actions cols-3">
+                <a class="quick-action" href="tel:+18683580435">
+                    <span class="qa-icon">📞</span> Call
+                </a>
+                <a class="quick-action" href="sms:+18683580435">
+                    <span class="qa-icon">💬</span> SMS
+                </a>
+                <a class="quick-action" href="https://wa.me/18683580435" target="_blank" rel="noopener">
+                    <span class="qa-icon">🟢</span> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="offline-badge" id="offlineBadge" style="display: none;">📡 Offline Mode</div>
+
+    <script>
+        const cardImage = document.getElementById('cardFrontImage');
+        const cardBackImage = document.getElementById('cardBackImage');
+        cardImage.src = 'front.png';
+        cardBackImage.src = 'back.png';
+
+        function handleImageError(imgEl, filename) {
+            imgEl.style.display = 'none';
+            const errorDiv = document.createElement('div');
+            errorDiv.style.padding = '60px 20px';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.style.backgroundColor = '#1e293b';
+            errorDiv.innerHTML = '<span style="font-size: 40px;">🖼️</span><p style="color: #94a3b8; margin-top: 10px;">' + filename + ' not found</p>';
+            imgEl.parentElement.insertBefore(errorDiv, imgEl);
+        }
+
+        cardImage.onerror = function() { handleImageError(this, 'front.png'); };
+        cardBackImage.onerror = function() { handleImageError(this, 'back.png'); };
+
+        const cardFlipContainer = document.getElementById('cardFlipContainer');
+        const cardFlipInner = document.getElementById('cardFlipInner');
+        const flipHint = document.getElementById('flipHint');
+        const infoBtn = document.getElementById('infoBtn');
+
+        cardFlipContainer.addEventListener('click', function() {
+            const isFlipped = cardFlipInner.classList.toggle('flipped');
+            flipHint.textContent = isFlipped ? '↻ Tap to flip back' : '↻ Tap to flip';
+            infoBtn.classList.toggle('visible', isFlipped);
+        });
+
+        const panelOverlay = document.getElementById('panelOverlay');
+        const panelClose = document.getElementById('panelClose');
+
+        infoBtn.addEventListener('click', function(event) {
+            event.stopPropagation(); // don't also trigger the card flip
+            panelOverlay.classList.add('open');
+        });
+
+        panelClose.addEventListener('click', function() {
+            panelOverlay.classList.remove('open');
+        });
+
+        panelOverlay.addEventListener('click', function(event) {
+            if (event.target === panelOverlay) {
+                panelOverlay.classList.remove('open');
+            }
+        });
+
+        // Tap zones sit invisibly over each line of the back-card artwork so
+        // the plain-looking text is actually clickable.
+        const phoneSheetOverlay = document.getElementById('phoneSheetOverlay');
+        const phoneSheetClose = document.getElementById('phoneSheetClose');
+
+        document.getElementById('tapPhone').addEventListener('click', function(event) {
+            event.stopPropagation();
+            phoneSheetOverlay.classList.add('open');
+        });
+
+        document.getElementById('tapEmail').addEventListener('click', function(event) {
+            event.stopPropagation();
+            window.location.href = 'mailto:D-TechDynamics@proton.me';
+        });
+
+        document.getElementById('tapLinkedIn').addEventListener('click', function(event) {
+            event.stopPropagation();
+            window.open('https://www.linkedin.com/in/devon-deonarine-a1b2b0398', '_blank', 'noopener');
+        });
+
+        document.getElementById('tapGitHub').addEventListener('click', function(event) {
+            event.stopPropagation();
+            window.open('https://github.com/DevonDeonarine', '_blank', 'noopener');
+        });
+
+        phoneSheetClose.addEventListener('click', function() {
+            phoneSheetOverlay.classList.remove('open');
+        });
+
+        phoneSheetOverlay.addEventListener('click', function(event) {
+            if (event.target === phoneSheetOverlay) {
+                phoneSheetOverlay.classList.remove('open');
+            }
+        });
+
+        function getVCardData() {
+            return [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                "N:Deonarine;Devon;;;",
+                "FN:Devon Deonarine",
+                "ORG:Tech Dynamics",
+                "TITLE:CEO & Owner, Full-Stack Developer & Software Architect",
+                "TEL;TYPE=CELL,VOICE,PREF:+18683580435",
+                "EMAIL;TYPE=WORK,INTERNET:D-TechDynamics@proton.me",
+                "URL;TYPE=LinkedIn:https://www.linkedin.com/in/devon-deonarine-a1b2b0398",
+                "URL;TYPE=GitHub:https://github.com/DevonDeonarine",
+                "NOTE:Custom Websites & Web Applications | Full-Stack Development | Business Dashboards & Admin Systems | Multi-Language & Mobile-Responsive Design | Automation & Smart Features | App & Software Development",
+                "URL;TYPE=Website:" + window.location.href,
+                "END:VCARD"
+            ].join("\n");
+        }
+
+        function getVCardBlob() {
+            return new Blob([getVCardData()], { type: 'text/vcard' });
+        }
+
+        // Pure client-side download - works with zero internet connection
+        // and zero hosting, on any protocol.
+        function downloadVCard() {
+            const blob = getVCardBlob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'devon_deonarine.vcf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('saveContactBtn').addEventListener('click', downloadVCard);
+
+        // Websites can't directly trigger a specific OS feature like
+        // Bluetooth pairing or Nearby Share/AirDrop - that level of device
+        // control is deliberately off-limits to web pages for privacy and
+        // security reasons. What we CAN do is hand the vCard file to the
+        // phone's native share sheet via the Web Share API, and that share
+        // sheet already lists Bluetooth and Nearby Share/AirDrop as options
+        // (when the device supports them) alongside apps like WhatsApp.
+        // Both buttons below open that same native sheet; the button label
+        // just tells the person which option to look for once it opens.
+        async function shareVCardViaSystemSheet(hintMessage) {
+            const blob = getVCardBlob();
+            const file = new File([blob], 'devon_deonarine.vcf', { type: 'text/vcard' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'Devon Deonarine - Tech Dynamics',
+                        text: 'Here is my contact card - save me to your contacts!',
+                        files: [file]
+                    });
+                    return;
+                } catch (err) {
+                    if (err.name === 'AbortError') return; // person cancelled the sheet, do nothing
+                    // fall through to download fallback below
+                }
+            }
+            // No native share-sheet support in this browser (common on
+            // desktop browsers) - fall back to a plain download the person
+            // can then send manually via their OS's own Bluetooth/Nearby
+            // Share/AirDrop option from their Downloads/Files app.
+            downloadVCard();
+            alert(hintMessage);
+        }
+
+        document.getElementById('ciPhone').addEventListener('click', function() {
+            window.location.href = 'tel:+18683580435';
+        });
+
+        document.getElementById('ciSms').addEventListener('click', function() {
+            window.location.href = 'sms:+18683580435';
+        });
+
+        document.getElementById('ciEmail').addEventListener('click', function() {
+            window.location.href = 'mailto:D-TechDynamics@proton.me';
+        });
+
+        document.getElementById('ciWhatsApp').addEventListener('click', function() {
+            window.open('https://wa.me/18683580435', '_blank', 'noopener');
+        });
+
+        document.getElementById('ciBluetooth').addEventListener('click', function() {
+            shareVCardViaSystemSheet('Your contact card was saved as devon_deonarine.vcf.\n\nOpen your Downloads/Files app, select it, and choose Bluetooth to send it to another device.');
+        });
+
+        document.getElementById('ciNearby').addEventListener('click', function() {
+            shareVCardViaSystemSheet('Your contact card was saved as devon_deonarine.vcf.\n\nOpen your Downloads/Files app, select it, and choose Nearby Share (Android) or AirDrop (iPhone) to send it to another device.');
+        });
+
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+                
+                function updateOfflineStatus() {
+                    const badge = document.getElementById('offlineBadge');
+                    if (!navigator.onLine) {
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                
+                window.addEventListener('online', updateOfflineStatus);
+                window.addEventListener('offline', updateOfflineStatus);
+                updateOfflineStatus();
+            });
+        }
+    </script>
+</body>
+</html>
