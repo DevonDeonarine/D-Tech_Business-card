@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0f1e">
+    
+    <!-- App Icons -->
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        %22name%22: %22Devon Deonarine - Tech Dynamics%22,
+        %22short_name%22: %22Tech Dynamics%22,
+        %22start_url%22: %22./%22,
+        %22display%22: %22standalone%22,
+        %22orientation%22: %22landscape%22,
+        %22theme_color%22: %22%230a0f1e%22,
+        %22background_color%22: %22%230a0f1e%22,
+        %22icons%22: [
+            {
+                %22src%22: %22icon.png%22,
+                %22sizes%22: %22192x192%22,
+                %22type%22: %22image/png%22,
+                %22purpose%22: %22any maskable%22
+            },
+            {
+                %22src%22: %22icon.png%22,
+                %22sizes%22: %22512x512%22,
+                %22type%22: %22image/png%22,
+                %22purpose%22: %22any maskable%22
+            }
+        ]
+    }">
+    
+    <title>Devon Deonarine | Tech Dynamics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0f1e 0%, #0d1425 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        .card-container {
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Card art is landscape-shaped. On a phone held upright (portrait),
+           rotate the whole page 90deg so the card displays sideways and
+           fills the screen properly, instead of sitting as a small strip
+           in the middle of a tall viewport. If the phone is actually turned
+           to landscape, this rule doesn't match and nothing is rotated. */
+        @media screen and (orientation: portrait) {
+            html {
+                width: 100vh;
+                height: 100vw;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                transform-origin: left top;
+                transform: rotate(-90deg);
+                overflow-x: hidden;
+            }
+            body {
+                width: 100vh;
+                height: 100vw;
+                min-height: 0;
+            }
+            /* Sized to 85% of the rotated frame (not a full 100%) so status
+               bars, notches, and nav bars along the real device edges don't
+               overlap the card content. Centered by the body's flex rules. */
+            .card-container {
+                max-width: none;
+                width: 85vh;
+                height: 85vw;
+            }
+        }
+
+        @media screen and (orientation: landscape) {
+            .card-container {
+                max-width: none;
+                width: 85vw;
+                height: 85vh;
+            }
+        }
+
+        .business-card {
+            background: #0f172a;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-image-container {
+            background: #0f172a;
+            padding: 0;
+            position: relative;
+            perspective: 1600px;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .card-flip-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* On the back face, protect the bottom contact row (GitHub) fully -
+           any unavoidable crop (from stretching a fixed-ratio image across
+           arbitrary phone screen ratios) comes from the decorative top
+           logo area instead, never from the functional rows below. */
+        .card-face-back .card-image {
+            object-position: center bottom;
+        }
+
+        .card-face {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-face-front {
+            object-fit: cover;
+        }
+
+        .card-face-back {
+            transform: rotateY(180deg);
+        }
+
+        .tap-zone {
+            position: absolute;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            border-radius: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tap-zone:active {
+            background: rgba(0, 212, 255, 0.15);
+        }
+
+        .flip-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 14px;
+            background: rgba(0,0,0,0.55);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .info-btn {
+            position: absolute;
+            bottom: 10px;
+            left: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            font-size: 16px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .info-btn.visible {
+            display: flex;
+        }
+
+        .info-btn:active {
+            transform: scale(0.92);
+        }
+
+        .save-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .save-btn:active {
+            transform: scale(0.92);
+        }
+
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .panel-overlay.open {
+            display: flex;
+        }
+
+        .info-panel {
+            background: #0f172a;
+            width: 100%;
+            max-width: 420px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 24px 24px 0 0;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-bottom: none;
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .panel-overlay.open .info-panel {
+            transform: translateY(0);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .panel-header h3 {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .panel-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .quick-actions.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+            margin-bottom: 0;
+        }
+
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 4px;
+            background: #1e293b;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #f1f5f9;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .quick-action:active {
+            opacity: 0.7;
+        }
+
+        .quick-action .qa-icon {
+            font-size: 20px;
+        }
+
+        .panel-services {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .panel-services h4 {
+            font-size: 12px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .panel-services ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .panel-services li {
+            font-size: 13px;
+            color: #cbd5e1;
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .panel-services li:before {
+            content: "▹";
+            color: #00d4ff;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #0a0f1e;
+            box-shadow: 0 4px 12px rgba(0,212,255,0.3);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        .offline-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: #00d4ff;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="business-card">
+            <div class="card-image-container" id="cardFlipContainer">
+                <div class="card-flip-inner" id="cardFlipInner">
+                    <img class="card-image card-face card-face-front" id="cardFrontImage" alt="Devon Deonarine - Tech Dynamics Business Card (Front)">
+                    <div class="card-face card-face-back">
+                        <img class="card-image" id="cardBackImage" alt="Devon Deonarine - Tech Dynamics Business Card (Back)">
+                        <button class="tap-zone tap-zone-phone" id="tapPhone" aria-label="Phone contact options"></button>
+                        <button class="tap-zone tap-zone-email" id="tapEmail" aria-label="Send email"></button>
+                        <button class="tap-zone tap-zone-linkedin" id="tapLinkedIn" aria-label="Open LinkedIn"></button>
+                        <button class="tap-zone tap-zone-github" id="tapGitHub" aria-label="Open GitHub"></button>
+                    </div>
+                </div>
+                <div class="flip-hint" id="flipHint">↻ Tap to flip</div>
+                <button class="info-btn" id="infoBtn" aria-label="Services">ℹ</button>
+                <button class="save-btn" id="saveContactBtnMain" aria-label="Save to Contacts">📇</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="panelOverlay">
+        <div class="info-panel">
+            <div class="panel-header">
+                <h3>Services</h3>
+                <button class="panel-close" id="panelClose" aria-label="Close">✕</button>
+            </div>
+
+            <div class="panel-services">
+                <ul>
+                    <li>Custom Websites & Web Applications</li>
+                    <li>Full-Stack Development (Front & Back-End)</li>
+                    <li>Business Dashboards & Admin Systems</li>
+                    <li>Multi-Language & Mobile-Responsive Design</li>
+                    <li>Automation & Smart Features</li>
+                    <li>App & Software Development</li>
+                </ul>
+            </div>
+
+            <button class="btn btn-primary" id="saveContactBtn">
+                📇 Save to Contacts (vCard)
+            </button>
+        </div>
+    </div>
+
+    <div class="panel-overlay" id="phoneSheetOverlay">
+        <div class="info-panel">
+            <div class="panel-header">
+                <h3>Contact by Phone</h3>
+                <button class="panel-close" id="phoneSheetClose" aria-label="Close">✕</button>
+            </div>
+
+            <div class="quick-actions cols-3">
+                <a class="quick-action" href="tel:+18683580435">
+                    <span class="qa-icon">📞</span> Call
+                </a>
+                <a class="quick-action" href="sms:+18683580435">
+                    <span class="qa-icon">💬</span> SMS
+                </a>
+                <a class="quick-action" href="https://wa.me/18683580435" target="_blank" rel="noopener">
+                    <span class="qa-icon">🟢</span> WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="offline-badge" id="offlineBadge" style="display: none;">📡 Offline Mode</div>
+
+    <script>
+        const cardImage = document.getElementById('cardFrontImage');
+        const cardBackImage = document.getElementById('cardBackImage');
+        cardImage.src = 'front.png';
+        cardBackImage.src = 'back.png';
+
+        function handleImageError(imgEl, filename) {
+            imgEl.style.display = 'none';
+            const errorDiv = document.createElement('div');
+            errorDiv.style.padding = '60px 20px';
+            errorDiv.style.textAlign = 'center';
+            errorDiv.style.backgroundColor = '#1e293b';
+            errorDiv.innerHTML = '<span style="font-size: 40px;">🖼️</span><p style="color: #94a3b8; margin-top: 10px;">' + filename + ' not found</p>';
+            imgEl.parentElement.insertBefore(errorDiv, imgEl);
+        }
+
+        cardImage.onerror = function() { handleImageError(this, 'front.png'); };
+        cardBackImage.onerror = function() { handleImageError(this, 'back.png'); };
+
+        // Tap zones sit invisibly over specific lines of the back-card
+        // artwork. Because the card is displayed with object-fit: cover
+        // (object-position: center bottom) to fill the entire screen edge
+        // to edge, the amount cropped off the top varies by screen shape.
+        // These row positions are measured against the ORIGINAL image
+        // (1659x948), then re-projected onto the actual on-screen crop/scale
+        // on every load, resize, and orientation change, so the invisible
+        // buttons always land on the correct row regardless of device.
+        const BACK_IMAGE_NATURAL_WIDTH = 1659;
+        const BACK_IMAGE_NATURAL_HEIGHT = 948;
+        const tapZoneRows = [
+            { el: document.getElementById('tapPhone'), top: 0.44, height: 0.11 },
+            { el: document.getElementById('tapEmail'), top: 0.55, height: 0.13 },
+            { el: document.getElementById('tapLinkedIn'), top: 0.68, height: 0.11 },
+            { el: document.getElementById('tapGitHub'), top: 0.79, height: 0.12 }
+        ];
+
+        function positionTapZones() {
+            const container = cardBackImage.parentElement; // .card-face-back
+            const containerW = container.clientWidth;
+            const containerH = container.clientHeight;
+            if (!containerW || !containerH) return;
+
+            // Replicate the browser's object-fit:cover + object-position:
+            // center bottom math to find exactly where the original image's
+            // content now sits within the displayed box.
+            const scale = Math.max(containerW / BACK_IMAGE_NATURAL_WIDTH, containerH / BACK_IMAGE_NATURAL_HEIGHT);
+            const scaledH = BACK_IMAGE_NATURAL_HEIGHT * scale;
+            const offsetY = containerH - scaledH; // <= 0; amount cropped off the top (bottom stays flush)
+
+            tapZoneRows.forEach(row => {
+                const topPx = row.top * scaledH + offsetY;
+                const heightPx = row.height * scaledH;
+                row.el.style.left = '8%';
+                row.el.style.width = '88%';
+                row.el.style.top = topPx + 'px';
+                row.el.style.height = heightPx + 'px';
+            });
+        }
+
+        window.addEventListener('resize', positionTapZones);
+        window.addEventListener('orientationchange', positionTapZones);
+        if (cardBackImage.complete) {
+            positionTapZones();
+        } else {
+            cardBackImage.addEventListener('load', positionTapZones);
+        }
+
+        const cardFlipContainer = document.getElementById('cardFlipContainer');
+        const cardFlipInner = document.getElementById('cardFlipInner');
+        const flipHint = document.getElementById('flipHint');
+        const infoBtn = document.getElementById('infoBtn');
+
+        cardFlipContainer.addEventListener('click', function() {
+            const isFlipped = cardFlipInner.classList.toggle('flipped');
+            flipHint.textContent = isFlipped ? '↻ Tap to flip back' : '↻ Tap to flip';
+            infoBtn.classList.toggle('visible', isFlipped);
+        });
+
+        const panelOverlay = document.getElementById('panelOverlay');
+        const panelClose = document.getElementById('panelClose');
+
+        infoBtn.addEventListener('click', function(event) {
+            event.stopPropagation(); // don't also trigger the card flip
+            panelOverlay.classList.add('open');
+        });
+
+        document.getElementById('saveContactBtnMain').addEventListener('click', function(event) {
+            event.stopPropagation(); // don't also trigger the card flip
+            downloadVCard();
+        });
+
+        panelClose.addEventListener('click', function() {
+            panelOverlay.classList.remove('open');
+        });
+
+        panelOverlay.addEventListener('click', function(event) {
+            if (event.target === panelOverlay) {
+                panelOverlay.classList.remove('open');
+            }
+        });
+
+        // Tap zones sit invisibly over each line of the back-card artwork so
+        // the plain-looking text is actually clickable.
+        const phoneSheetOverlay = document.getElementById('phoneSheetOverlay');
+        const phoneSheetClose = document.getElementById('phoneSheetClose');
+
+        document.getElementById('tapPhone').addEventListener('click', function(event) {
+            event.stopPropagation();
+            phoneSheetOverlay.classList.add('open');
+        });
+
+        document.getElementById('tapEmail').addEventListener('click', function(event) {
+            event.stopPropagation();
+            window.location.href = 'mailto:D-TechDynamics@proton.me';
+        });
+
+        document.getElementById('tapLinkedIn').addEventListener('click', function(event) {
+            event.stopPropagation();
+            window.open('https://www.linkedin.com/in/devon-deonarine-a1b2b0398', '_blank', 'noopener');
+        });
+
+        document.getElementById('tapGitHub').addEventListener('click', function(event) {
+            event.stopPropagation();
+            window.open('https://github.com/DevonDeonarine', '_blank', 'noopener');
+        });
+
+        phoneSheetClose.addEventListener('click', function() {
+            phoneSheetOverlay.classList.remove('open');
+        });
+
+        phoneSheetOverlay.addEventListener('click', function(event) {
+            if (event.target === phoneSheetOverlay) {
+                phoneSheetOverlay.classList.remove('open');
+            }
+        });
+
+        function getVCardData() {
+            return [
+                "BEGIN:VCARD",
+                "VERSION:3.0",
+                "N:Deonarine;Devon;;;",
+                "FN:Devon Deonarine",
+                "ORG:Tech Dynamics",
+                "TITLE:CEO & Owner, Full-Stack Developer & Software Architect",
+                "TEL;TYPE=CELL,VOICE,PREF:+18683580435",
+                "EMAIL;TYPE=WORK,INTERNET:D-TechDynamics@proton.me",
+                "URL;TYPE=LinkedIn:https://www.linkedin.com/in/devon-deonarine-a1b2b0398",
+                "URL;TYPE=GitHub:https://github.com/DevonDeonarine",
+                "NOTE:Custom Websites & Web Applications | Full-Stack Development | Business Dashboards & Admin Systems | Multi-Language & Mobile-Responsive Design | Automation & Smart Features | App & Software Development",
+                "URL;TYPE=Website:" + window.location.href,
+                "END:VCARD"
+            ].join("\n");
+        }
+
+        function getVCardBlob() {
+            return new Blob([getVCardData()], { type: 'text/vcard' });
+        }
+
+        // Pure client-side download - works with zero internet connection
+        // and zero hosting, on any protocol.
+        function downloadVCard() {
+            const blob = getVCardBlob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'devon_deonarine.vcf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('saveContactBtn').addEventListener('click', downloadVCard);
+
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+                
+                function updateOfflineStatus() {
+                    const badge = document.getElementById('offlineBadge');
+                    if (!navigator.onLine) {
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                
+                window.addEventListener('online', updateOfflineStatus);
+                window.addEventListener('offline', updateOfflineStatus);
+                updateOfflineStatus();
+            });
+        }
+    </script>
+</body>
+</html>
